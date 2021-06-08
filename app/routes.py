@@ -1,9 +1,19 @@
 from app import app
-from flask import render_template, url_for, redirect
+from flask import render_template, url_for, redirect, request
 from app.forms import LoginForm, RegisterForm, CursoForm
-from flask_login import current_user, login_user, login_required, logout_user
+from flask_login import current_user, login_user, login_required, logout_user, login_manager, LoginManager
 from app.models import User, Curso
 from app import db
+
+login_manager = LoginManager(app)
+
+@login_manager.unauthorized_handler
+def unauthorized():
+    return redirect('/login?next=' + request.path)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.filter_by(id=user_id).first()
 
 @app.route("/")
 def index():
@@ -50,18 +60,28 @@ def register():
         return render_template("register.html", form=form)
 
 @app.route("/logout")
+@login_required
 def logout():
     logout_user()
     return redirect(url_for("index"))
 
 # cursos
 @app.route("/cursos", methods=["GET"])
+@login_required
 def cursos_index():
     #TODO: añadir filtro para que solo puedan acceder profesores
     cursos = Curso.query.filter_by(id_profesor=current_user.id).all()
     return render_template("cursos_index.html",cursos = cursos)
 
+@app.route("/cursos/<int:id>", methods=["GET"])
+@login_required
+def cursos_show(id):
+    curso = Curso.query.filter_by(id=id).first()
+    return render_template("curso_show.html", curso=curso)
+
+
 @app.route("/cursos/create", methods=["GET", "POST"])
+@login_required
 def cursos_create():
     form=CursoForm()
     if form.validate_on_submit():
@@ -74,6 +94,7 @@ def cursos_create():
         return render_template("curso_create.html", form=form)
 
 @app.route("/cursos/destroy/<int:id>")
+@login_required
 def cursos_destroy(id):
     # Revisar la bd si existe ese curso con ese id
     curso = Curso.query.filter_by(id=id).first()

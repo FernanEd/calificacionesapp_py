@@ -23,10 +23,9 @@ class User(UserMixin, db.Model):
         return "Usuario: {}, email: {}".format(self.matricula, self.email)
 
 usuario_curso = db.Table('usuario_curso',
- db.Column('id_user', db.Integer, db.ForeignKey('user.id'), primary_key=True),
- db.Column('id_curso', db.Integer, db.ForeignKey('curso.id'), primary_key=True)
- )
-
+    db.Column('id_user', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('id_curso', db.Integer, db.ForeignKey('curso.id'), primary_key=True)
+    )
 
 class Curso(db.Model):
     id = db.Column(db.Integer, primary_key=True)
