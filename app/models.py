@@ -22,10 +22,18 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return "Usuario: {}, email: {}".format(self.matricula, self.email)
 
+usuario_curso = db.Table('usuario_curso',
+ db.Column('id_user', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+ db.Column('id_curso', db.Integer, db.ForeignKey('curso.id'), primary_key=True)
+ )
+
+
 class Curso(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120))
     id_profesor = db.Column(db.Integer, db.ForeignKey("user.id"))
+    alumnos = db.relationship('User', secondary=usuario_curso, lazy='subquery')
+    backref = db.backref('cursos', lazy=True)
 
 @login.user_loader
 def load_user(id):

@@ -1,17 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <div>
-        <p>{{ current_user.email }}</p>
-    </div>
-    {% block content %}
-    <h1>En construcción</h1>
-    {% endblock%}
-</body>
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>{% block title %}{% endblock%}</title>
+	</head>
+	<style>
+		* {
+			padding: 0;
+			margin: 0;
+			box-sizing: border-box;
+			font-family: monospace;
+		}
+
+		html,
+		body {
+			font-size: 16px;
+			color: #333;
+		}
+
+		a {
+			color: #11d;
+			text-decoration: none;
+		}
+
+		a:hover {
+			text-decoration: underline;
+		}
+
+		button,
+		input[type='submit'] {
+			background-color: #11d;
+			color: #fff;
+			padding: 0.5rem 0.75rem;
+			border: 0;
+			font-size: 1rem;
+			cursor: pointer;
+		}
+
+		input:not([type='submit']) {
+			padding: 0.75rem;
+		}
+
+		body > header {
+			background-color: #11d;
+			color: #fff;
+			display: flex;
+			justify-content: space-between;
+			padding: 1rem calc((100vw - 1000px - 0.5rem) / 2);
+		}
+
+		body > header > nav > ul {
+			display: flex;
+			list-style: none;
+			gap: 1rem;
+		}
+
+		body > header > nav > ul > li > a {
+			color: #fff;
+		}
+
+		body > main {
+			padding: 1rem calc((100vw - 1000px - 0.5rem) / 2);
+		}
+
+		ul {
+			padding-left: 1.25rem;
+		}
+
+		form {
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+		}
+
+		#cursos-wrapper {
+			display: flex;
+			flex-direction: column;
+			gap: 1rem;
+
+			list-style: none;
+			padding: 0;
+			margin: 0;
+		}
+
+		#cursos-wrapper li {
+			border-left: 3px solid #11d;
+			padding-left: 1rem;
+		}
+	</style>
+	<body>
+		<header>
+			{% if current_user.is_authenticated %}
+			<p>Usuario: {{ current_user.email }}</p>
+			{% else %}
+			<p>Usuario no loggeado</p>
+			{% endif %}
+			<nav>
+				<ul>
+					<li><a href="{{url_for('index')}}">Inicio</a></li>
+					<li><a href="{{url_for('cursos_index')}}">Cursos</a></li>
+					{% if current_user.email %}
+					<li><a href="{{url_for('logout')}}">Salir</a></li>
+					{% else %}
+					<li><a href="{{url_for('login')}}">Ingresar</a></li>
+					{% endif %}
+				</ul>
+			</nav>
+		</header>
+		<main>{% block content %} {% endblock%}</main>
+	</body>
 </html>
