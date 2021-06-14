@@ -12,7 +12,7 @@ class User(UserMixin, db.Model):
     # Añadir telefono
     matricula=db.Column(db.String(10), index=True, unique=True)
     password_hash=db.Column(db.String(128))
-    cursos=db.relationship("curso", backref="profesor", lazy="dynamic")
+    cursos=db.relationship("Curso", backref="profesor", lazy="dynamic")
 
     def set_password(self,password):
         self.password_hash = generate_password_hash(password)
@@ -32,7 +32,7 @@ class Curso(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120))
     id_profesor = db.Column(db.Integer, db.ForeignKey("user.id"))
-    alumnos = db.relationship("user", secondary=usuario_curso, lazy="subquery", 
+    alumnos = db.relationship("User", secondary=usuario_curso, lazy="subquery", 
     backref=db.backref("cursos_de_alumno", lazy=True))
 
 
