@@ -6,7 +6,14 @@
         {{ form.hidden_tag() }}
         {{ form.name.label }}
         {{ form.name(size=32) }}
+
+        {% for error in form.name.errors %}
+            <p class="error">{{ error }}</p>
+        {% endfor %}
+
         {{ form.submit() }}
 
     </form>
+
+    
 {% endblock %}

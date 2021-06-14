@@ -1,8 +1,8 @@
 from app import app
 from flask import render_template, url_for, redirect, request
-from app.forms import LoginForm, RegisterForm, CursoForm
+from app.forms import LoginForm, RegisterForm, CursoForm, TareaForm
 from flask_login import current_user, login_user, login_required, logout_user, login_manager, LoginManager
-from app.models import User, Curso
+from app.models import Calificaciones, Tarea, User, Curso
 from app import db
 
 login_manager = LoginManager(app)
@@ -93,6 +93,29 @@ def cursos_create():
         #pidiento el formulario
         return render_template("curso_create.html", form=form)
 
+
+# <!-- cursos/<id>/alumnos/storecursos_alumnos_store-->
+@app.route("/cursos/<int:id_curso>/alumnos/store" , methods=["POST"])
+@login_required
+def cursos_alumnos_store(id_curso):
+    correos = request.form["alumnos"]
+    correos = correos.replace(" ", "")
+    correos = correos.split(",")
+    sadas = ""
+    curso = Curso.query.filter_by(id=id_curso).first()
+    for correo in correos: 
+        # Si el alumno ya esta inscrito saltar
+        alumno = User.query.filter_by(email=correo).first()
+        if alumno:
+            # if alumno ya inscrito no instcribir
+            curso.alumnos.append(alumno)
+        else:
+            #TODO: Flash con alumno no encontrado
+            pass
+    db.session.add(curso)
+    db.session.commit()
+    return redirect(url_for("cursos_show", id=id_curso))
+
 @app.route("/cursos/destroy/<int:id>")
 @login_required
 def cursos_destroy(id):
@@ -105,3 +128,71 @@ def cursos_destroy(id):
     # Redireccionar a cursos create
     return redirect(url_for("cursos_index"))
     # return str(curso.name)
+
+
+# Tareas
+
+@app.route("/cursos/<int:id>/tareas/create",  methods=["GET", "POST"])
+@login_required
+def cursos_tareas_create(id):
+    curso = Curso.query.filter_by(id=id).first()
+    form = TareaForm()
+    if form.validate_on_submit():
+        # Post
+        tarea = Tarea()
+        tarea.titulo = form.titulo.data
+        tarea.id_curso = id
+        tarea.fecha_de_creacion = form.fecha_de_creacion.data
+        tarea.fecha_de_entrega = form.fecha_de_entrega.data
+        tarea.descripcion= form.descripcion.data
+        tarea.puntaje = form.puntos.data
+        db.session.add(tarea)
+        db.session.commit()
+        return redirect(url_for("cursos_tareas_index", id=id)) # TODO: Cambiar
+    else:
+        return render_template("cursos_tareas_create.html", curso=curso, form=form)
+
+
+@app.route("/cursos/<int:id>/tareas",  methods=["GET", "POST"])
+@login_required
+def cursos_tareas_index(id):
+    curso = Curso.query.filter_by(id=id).first()
+    tareas = Tarea.query.filter_by(id_curso=id)
+    return render_template("cursos_tareas_index.html", curso=curso, tareas=tareas)
+
+
+# Calificaicones
+
+# cursos_tareas_calificaciones_edit', id_curso=curso.id, id_tarea=tarea.id
+@app.route("/cursos/<int:id_curso>/tareas/<int:id_tarea>/edit",  methods=["GET"])
+@login_required
+def cursos_tareas_calificaciones_edit(id_curso, id_tarea):
+    curso = Curso.query.filter_by(id=id_curso).first()
+    tarea = Tarea.query.filter_by(id=id_tarea).first()
+    calificaciones = Calificaciones.query.filter_by(id_tarea=id_tarea).all()
+    calificaciones_dict={}
+    for calificacion in calificaciones:
+        calificaciones_dict[calificacion.id_alumno] = calificacion.calificacion
+    print(calificaciones_dict)
+    return render_template("cursos_tareas_calificaciones_edit.html", 
+                            curso=curso, 
+                            tarea=tarea, 
+                            alumnos=curso.alumnos, 
+                            calificaciones=calificaciones_dict)
+
+@app.route("/cursos/<int:id_curso>/tareas/<int:id_tarea>/update",  methods=["POST"])
+@login_required
+def cursos_tareas_calificaciones_update(id_curso, id_tarea):
+    calificaciones = request.form
+    for id_alumno,calificaion_tarea in calificaciones.items():
+        # print(id_alumno,value)
+        calificacion = Calificaciones.query.filter_by(id_alumno=id_alumno, id_tarea=id_tarea).first()
+        if not calificacion:
+            calificacion = Calificaciones()
+            calificacion.id_alumno=id_alumno
+            calificacion.id_tarea = id_tarea
+        calificacion.calificacion = calificaion_tarea
+        
+        db.session.add(calificacion)
+    db.session.commit()
+    return redirect(url_for("cursos_tareas_calificaciones_edit", id_tarea=id_tarea, id_curso=id_curso))

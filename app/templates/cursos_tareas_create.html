@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>Tareas para el curso {{curso.name}}</h1>
+  <form action="" method="post" novalidate>
+      {{ form.hidden_tag() }}
+
+      {{ form.titulo.label }}
+      {{ form.titulo(size=32) }}
+
+      {% for error in form.titulo.errors %}
+        <p class="error">{{ error }}</p>
+      {% endfor %}
+
+      {{ form.fecha_de_creacion.label }}
+      {{ form.fecha_de_creacion(size=32) }}
+
+      {% for error in form.fecha_de_creacion.errors %}
+        <p class="error">{{ error }}</p>
+      {% endfor %}
+
+      {{ form.fecha_de_entrega.label }}
+      {{ form.fecha_de_entrega(size=32) }}
+
+      {% for error in form.fecha_de_entrega.errors %}
+        <p class="error">{{ error }}</p>
+      {% endfor %}
+
+      {{ form.descripcion.label }}
+      {{ form.descripcion(size=32) }}
+
+      {% for error in form.descripcion.errors %}
+        <p class="error">{{ error }}</p>
+      {% endfor %}
+
+      {{ form.puntos.label }}
+      {{ form.puntos(size=32) }}
+
+      {% for error in form.puntos.errors %}
+        <p class="error">{{ error }}</p>
+      {% endfor %}
+      
+      {{ form.submit() }}
+  </form>
+{% endblock %}
